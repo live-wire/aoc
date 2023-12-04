@@ -47,9 +47,9 @@ def main(filename):
 if __name__ == '__main__':
     if len(sys.argv) != 2:
         print('Small:')
-        main('2a.small.input')
+        main('2.small.input')
         print('-'*10)
         print('Large:')
-        main('2a.input')
+        main('2.input')
     else:
         main(sys.argv[1])

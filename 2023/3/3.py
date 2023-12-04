@@ -72,9 +72,9 @@ def main(filename):
 if __name__ == '__main__':
     if len(sys.argv) != 2:
         print('Small:')
-        main('3a.small.input')
+        main('3.small.input')
         print('-'*10)
         print('Large:')
-        main('3a.input')
+        main('3.input')
     else:
         main(sys.argv[1])
