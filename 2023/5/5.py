@@ -1,4 +1,6 @@
 import sys
+import portion as P
+from typing import Tuple
 
 def read_lines(filename):
     with open(filename) as f:
@@ -29,7 +31,7 @@ def process(filename, seed_prep_func):
             src,dst = None, None
         if "seeds:" in line:
             seeds = seed_prep_func(line)
-            print(len(seeds))
+            # print(len(seeds))
         if "-to-" in line:
             src, dst = line.split(" ")[0].split("-to-")
             # print(src,dst)
@@ -47,9 +49,61 @@ def process(filename, seed_prep_func):
     minloc = min(list(map(lambda x: x['location'], seeds.values())))
     return minloc
 
+def faster_process_using_portion(path):
+    with open(path, "r") as file:
+        sections = file.read().split("\n\n")
+
+    initial_range: P.Interval = P.empty()
+    seed_values = sections[0].split(":")[1].split()
+    for index in range(0, len(seed_values), 2):
+        start_point = int(seed_values[index])
+        end_point = start_point + int(seed_values[index + 1]) - 1
+        initial_range: P.Interval = initial_range | P.closed(start_point, end_point)
+
+    translation_intervals: list[list[Tuple[P.Interval, int]]] = []
+    combined_intervals: list[P.Interval] = []
+    for section in sections[1:]:
+        section_combined_intervals = P.empty()
+        section_translation_mappings = []
+        for line in section.split("\n")[1:]:
+            if not line.strip():
+                continue
+            target_start, source_start, length = map(int, line.split())
+            source_interval = P.closed(source_start, source_start + length - 1)
+            section_combined_intervals = section_combined_intervals | source_interval
+            section_translation_mappings.append(
+                (source_interval, target_start - source_start)
+            )
+        translation_intervals.append(section_translation_mappings)
+        combined_intervals.append(section_combined_intervals)
+
+    final_range = initial_range
+    for (combined_interval, interval_translations) in zip(
+        combined_intervals, translation_intervals
+    ):
+        non_overlapping = final_range - combined_interval
+        updated_intervals = P.empty()
+        for (interval, shift) in interval_translations:
+            updated_intervals = updated_intervals | shift_interval(
+                final_range & interval, shift
+            )
+        final_range = non_overlapping | updated_intervals
+
+    return final_range.lower
+
+
+def shift_interval(interval, shift):
+    def shift_bound(bound):
+        return bound + shift
+
+    return interval.apply(
+        lambda x: x.replace(upper=shift_bound, lower=shift_bound)
+    )
+
 def main(filename):
     print("PART-1:", process(filename, prepare_seeds_part_1))
-    print("PART-2:", process(filename, prepare_seeds_part_2)) # TOO SLOW
+    # print("PART-2:", process(filename, prepare_seeds_part_2)) # TOO SLOW
+    print("PART-2:", faster_process_using_portion(filename))
 
 
 if __name__ == '__main__':
