@@ -2,6 +2,7 @@
 #
 # ./scripts/scaffold.py <year> <day>
 import sys
+import os
 
 
 def read_template():
@@ -12,6 +13,8 @@ def read_template():
 def publish(year, day):
     template = read_template()
     update_template = template.replace("{year}", year).replace("{day}", day)
+    if not os.path.exists(f"{year}/{day}"):
+        os.makedirs(f"{year}/{day}")
     with open(f"{year}/{day}/{day}.py", "w") as f:
         f.write(update_template)
     with open(f"{year}/{day}/{day}.small.input", "w") as f:
