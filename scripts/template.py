@@ -14,7 +14,7 @@ def read_lines(filename):
 def main(filename):
     for line in read_lines(filename):
         print(line)
-    part1, part2 = 0
+    part1, part2 = 0, 0
     print("Part1: ", part1)
     print("Part2: ", part2)
 
